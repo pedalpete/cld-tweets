@@ -1,0 +1,9 @@
+{
+	"name": "cld-tweet",
+	"description": "a sample app with node/express and backbone consuming webservices",
+	"version": "0.0.1",
+	"private": true,
+	"dependencies":{
+		"express" : "3.3.4"
+	}
+}
