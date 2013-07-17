@@ -9,9 +9,14 @@ var twit = new Twit({
 	access_token_secret: 'juuk5UAaikZHrV1wUC4rPzB6NlnEno4FUF0z3GbPM'
 });
 
-
+app.get('/', function(req,res){
+	res.sendfile('index.html');
+});
+app.get('/js/:js', function(req,res){
+	console.log('looking for js');
+	res.sendfile('js/'+req.params.js);
+});
 app.get('/tweets/:username', function(req,res){
-
 
 	twit.getUserTimeline({screen_name: req.params.username}, function(err,data){
 		 res.type('json');
