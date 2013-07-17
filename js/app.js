@@ -3,9 +3,10 @@ var app = {
 	Views:{},
 	Routers:{},
 	Collections:{},
+	Helpers: {},
 	Init: function(){
 
-	var router = new app.Routers.routes;
+	router = new app.Routers.routes;
         Backbone.history.start();
 		
 	}
@@ -13,14 +14,42 @@ var app = {
 
 app.Routers.routes = Backbone.Router.extend({
 	routes: {
-		"":				"index"
+		"":				"index",
+		":username": 	"getTweets"  //this ends up being a catch-all for all twitter handles
 	},
 
 	index: function(){
 		new app.Views.GetTweets();
+	},
+	getTweets: function(username){
+		new app.Views.GetTweets();
+		app.Helpers.getTweets(username);
 	}
 });
 
+app.Helpers = {
+	getTweets : function(username){
+		$('div#tweets').html('<h1>Loading...</h1>');
+		if($("input[name=twitter_handle]").val()=='' && username !=''){
+			$("input[name=twitter_handle]").val(username)
+		}
+		var tweets = new app.Collections.Tweets({data:{query: username}});
+		tweets.fetch({
+			error: function(){
+				$('div#errors').text('oops, something went wrong');
+				},
+				success: function(model,response){
+
+			if(response.error!=undefined){
+				$('div#errors').text(response.error);
+					} else {
+				new app.Views.Tweets({collection:tweets});
+				}
+			}
+		});
+	}
+
+}
 app.Collections.Tweets = Backbone.Collection.extend({
 	url: function(){
 		return '/tweets/'+this.username;
@@ -61,31 +90,18 @@ app.Views.GetTweets = Backbone.View.extend({
 	},
 	events: {
 		"submit": "getNewTweets",
-		"keyup input" : "emptyError"
+		"keyup input" : "emptyError" //this empties the error when the users starts typing
 	},
 	render: function(){
-		$(this.el).html('<input type="text" name="twitter_handle"/><input id="tweets_button" type="submit" value="Get Tweets"/><div id="errors"></div>');
+		$(this.el).html('<input type="text" name="twitter_handle" placeholder="enter twitter username"/><input id="tweets_button" type="submit" value="Get Tweets"/><div id="errors"></div>');
 	},
 	getNewTweets: function(){
 		var getInput = $("input[type=text]",this.el).val();
 		if(getInput.length==0){
 			$('div#errors',this.el).text('Type a twitter username into the text box!');
 		} else {
-			var tweets = new app.Collections.Tweets({data:{query:getInput}});
-			tweets.fetch({
-					error: function(){
-						$('div#errors',this.el).text('oops, something went wrong');
-					},
-					success: function(model,response){
-
-				if(response.error!=undefined){
-					$('div#errors',this.el).text(response.error);
-						} else {
-						console.log(tweets);
-					new app.Views.Tweets({collection:tweets});
-					}
-				}
-			});
+			router.navigate(getInput);
+			app.Helpers.getTweets(getInput);
 		}
 		return false;
 	},
@@ -108,10 +124,17 @@ app.Views.Tweets = Backbone.View.extend({
 	},
 	getSelectedText: function(e){
 
-		var selectedText = document.getSelection();
-		selectedText = encodeURI(selectedText.toString().replace(' ','_'));
-		$('div#popup').css({top: e.pageY, left: e.pageX}).html('<div id="wiki"></div><div id="images"></div>').addClass('hidden');
-		if(selectedText!=''){
+		var selectedText = document.getSelection().toString();
+
+		if(selectedText.replace(' ','')==''){ //if selected string is empty, just hide the popup if it's open
+			$('div#popup').addClass('hidden');
+			return;
+		}
+		selectedText = encodeURI(selectedText.replace(' ','_')); //seems wikipedia uses underscores rather than + for official articles try to get _'s
+	
+		if(selectedText.match("^[a-zA-Z0-9]*$")!=null){ //check that the selected text has some valid characters. 
+			$('div#popup').css({top: e.pageY, left: e.pageX}).html('<div id="wiki"><h1>Loading...</h1></div><div id="images"></div>').removeClass('hidden');
+	
 			var wiki_p = new app.Models.Wikipedia({data: {query:selectedText}});
 			wiki_p.fetch({
 				error: function(){
@@ -135,6 +158,8 @@ app.Views.Tweets = Backbone.View.extend({
 		 	}
 		 });
 
+		} else {
+			$('div#popup').addClass('hidden');
 		}
 		
 	}
@@ -148,7 +173,7 @@ app.Views.Wikipedia = Backbone.View.extend({
 
 	},
 	render: function(){
-		if(this.model.attributes.first_paragraph.length<100){
+		if(this.model.attributes.first_paragraph.length<100){ // short entry was likely that wikipedia didn't find one great  match
 			this.model.attributes.first_paragraph = 'There is no single Wikipedia entry which best matches your selection.';
 		}
 		$(this.el).html('<span>'+this.model.attributes.first_paragraph+'</span> <a href="'+this.model.attributes.url+'" target="new">See more on Wikipedia</a>');
@@ -164,7 +189,7 @@ app.Views.Images = Backbone.View.extend({
 	},
 	add: function(img){
 		console.log(img.attributes);
-		$('div#images').append('<img src="'+img.attributes.img+'"/>');
+		$('div#images').append('<div class="img" style="background-image: url('+img.attributes.img+')"/></div>');
 	}
 });
 

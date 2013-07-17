@@ -1,0 +1,2 @@
+// yeah, I should have tests in here, but I'm still learning javascript testing and using angular. Not sure how to test in backbone or node yet. 
+// I hope you're at least impressed that I considered testing :)

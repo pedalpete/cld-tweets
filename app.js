@@ -2,7 +2,7 @@ var express = require('express');
 var app = express();
 
 var Twit= require('ntwitter');
-var twit = new Twit({
+var twit = new Twit({ //these shouldn't be in here, but I had to put it up to github
 	consumer_key: '6kHU6nFRR7OmeslN3bjgQ',
 	consumer_secret: 'SRiFuy23hG52P9MdmU4IYXY8tUl8Pha14211Eyzg',
 	access_token_key: '1947401-SB3BZaiR1EwR49Wi6iOlyJuUA4dGy9K1Hso6mbY',
@@ -80,6 +80,11 @@ app.get('/bing-images/:query', function(req,res){
 		}
 	});
 });
+
+app.get('/:username', function(req,res){ //catch-all for if a username gets entered into the url field, or a non-previous match, we still try to show something
+	res.sendfile('index.html');
+});
+
 app.listen(process.env.PORT || 4730);
 
 	

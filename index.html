@@ -1,16 +1,92 @@
 <html>
 	<head>
 	<title>Hi Mathiue, thanks for getting me to learn node/express</title>
-		<link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet"/>
 		<style>
+		 body{
+		 	margin:0;
+		 	padding: 0;
+		 	font-family: 'trebuchet','arial', 'san-serif';
+		 }
+		  div#container {
+		  	width: 760px;
+		  	margin-left: auto;
+		  	margin-right:auto;
+		  	position: absolute;
+		  	top: 0;
+		  	left:0;
+		  	margin: 0;
+		  }
+		  div.row:nth-child(1){
+		  	background-color: #EDEDED;
+		  	padding: 40px;
+
+		  }
+
+		  form {
+		  	width: 420px;
+		  	margin-left: auto;
+		  	margin-right: auto;
+		  }
+
+		  input {
+		  	font-size: 18pt;
+		  	border: none;
+		  	padding: 5px;
+		  	margin: 5px;
+		  }
+
+		  input#tweets_button {
+		  	background-color: #46E876;
+		  	color: #EDEDED;
+
+		  }
+
+		  div#errors {
+		  	color: red;
+		  	font-size: 18pt;
+		  	height: 25px;
+		  	padding: 5px;
+		  }
+
+		  div#tweets {
+		  	margin-top: 30px;
+		  	width: 760px;
+		  	margin-left: auto;
+		  	margin-right: auto;
+		  }
+
+		  div#tweets > div {
+		  	padding: 30px;
+		  }
 		  div#popup{
 		  	position: absolute;
 		  	background-color: #EDEDED;
+		  	float: left;
+		  	width: 380px;
+		  	padding: 8px;
+		  	margin-bottom: 30px;
+		  	padding: 15px;
 		  	
 		  }
+
+		  div#popup div.img {
+		  	float: left;
+		  	width: 40px;
+		  	height: 40px;
+		  	background-size: cover;
+		  	margin-right: 5px;
+		  	margin-top: 15px;
+		  }
+
 		  div.hidden {
 		  	display: none;
 		  }
+
+		  h1 {
+		  	text-align: center;
+		  	color: red;
+		  }
+
 		</style>
 	</head>
 	<body>
@@ -19,8 +95,7 @@
 			<form id="getTweets">
 			</form>
 		</div>
-	</div>
-	<div class="container">
+
 		<div id="tweets"></div>
 	</div>
 	<div class="span3 hidden" id="popup">
@@ -29,7 +104,6 @@
 	<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 	<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
 	<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.0.0/backbone-min.js"></script>
-	<script type="text/javascript" src="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
 	<script type="text/javascript" src="js/app.js"></script>
 	<script>
 	 $(app.Init());
