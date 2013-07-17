@@ -21,7 +21,25 @@ app.Routers.routes = Backbone.Router.extend({
 	}
 });
 
-app.Collections.Tweets = Backbone.Collection.extend();
+app.Collections.Tweets = Backbone.Collection.extend({
+	url: function(){
+		return '/tweets/'+this.username;
+	},
+	initialize: function(options){
+		options || (options={});
+		this.username=options.data.query;
+	}
+});
+
+app.Models.Wikipedia = Backbone.Model.extend({
+	url: function(){
+		return '/wikipedia/'+this.query;
+	},
+	initialize: function(options){
+		options || (options={});
+		this.query=options.data.query;
+	}
+})
 
 
 app.Views.GetTweets = Backbone.View.extend({
@@ -41,14 +59,21 @@ app.Views.GetTweets = Backbone.View.extend({
 		if(getInput.length==0){
 			$('div#errors',this.el).text('Type a twitter username into the text box!');
 		} else {
-			$.getJSON('/tweets/'+getInput,function(data){
-				if(data.error!=undefined){
-					$('div#errors',this.el).text(data.error);
-				} else {
-					var tweets = new app.Collections.Tweets(data);
+			var tweets = new app.Collections.Tweets({data:{query:getInput}});
+			tweets.fetch({
+					error: function(){
+						$('div#errors',this.el).text('oops, something went wrong');
+					},
+					success: function(model,response){
+
+				if(response.error!=undefined){
+					$('div#errors',this.el).text(response.error);
+						} else {
+						console.log(tweets);
 					new app.Views.Tweets({collection:tweets});
+					}
 				}
-			})
+			});
 		}
 		return false;
 	},
@@ -70,19 +95,37 @@ app.Views.Tweets = Backbone.View.extend({
 		$('div#tweets').append('<div class="tweet">'+tweet.attributes.text+'</div>');
 	},
 	getSelectedText: function(e){
-		var top = e.pageX;
-		var left = e.pageY;
-		var selectedText = document.getSelection();
-		if(selectedText==''){
 
-		} else {
-			
+		var selectedText = document.getSelection();
+		$('div#popup').css({top: e.pageY, left: e.pageX}).empty().addClass('hidden');
+		if(selectedText!=''){
+			wiki_p = new app.Models.Wikipedia({data: {query:selectedText}});
+			wiki_p.fetch({
+				error: function(){
+
+				},
+				success: function(response,e){
+					new app.Views.Wikipedia({
+						model: response
+					});
+				}
+
+			});
 		}
+		
 	}
 
 });
 
 app.Views.Wikipedia = Backbone.View.extend({
-
+	el: 'div#popup',
+	initialize: function(){
+		$(this.el).empty();
+		this.render();
+		console.log(this);
+	},
+	render: function(){
+		$(this.el).text(this.model.attributes.first_paragraph).removeClass('hidden');
+	}
 });
 

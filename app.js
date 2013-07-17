@@ -8,6 +8,8 @@ var twit = new Twit({
 	access_token_key: '1947401-SB3BZaiR1EwR49Wi6iOlyJuUA4dGy9K1Hso6mbY',
 	access_token_secret: 'juuk5UAaikZHrV1wUC4rPzB6NlnEno4FUF0z3GbPM'
 });
+var ext_request = require('request');
+var cheerio = require('cheerio');
 
 app.get('/', function(req,res){
 	res.sendfile('index.html');
@@ -33,6 +35,20 @@ app.get('/tweets/:username', function(req,res){
 		});
 });
 
+app.get('/wikipedia/:query', function(req,res){
+
+	ext_request('http://en.wikipedia.org/wiki/'+req.params.query, function(err,resp,body){
+		 res.type('json');
+		if(err){
+			return res.jsonp({error: "dang! There was a probem getting the wikipedia page. Is it possible wikipedia doesn't know what "+req.params.query+" is?"});
+		} else {
+			$=cheerio.load(body);
+			var first_p = $('p').slice(0).eq(0).text();
+			return res.jsonp({first_paragraph: first_p});
+		}
+	});
+	
+});
 app.listen(process.env.PORT || 4730);
 
 	
