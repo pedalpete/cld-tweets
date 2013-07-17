@@ -39,7 +39,19 @@ app.Models.Wikipedia = Backbone.Model.extend({
 		options || (options={});
 		this.query=options.data.query;
 	}
-})
+});
+
+app.Collections.Images = Backbone.Collection.extend({
+	url: function(){
+		return '/bing-images/'+this.query;
+	},
+	initialize: function(options){
+		options || (options={});
+		this.query = options.data.query;
+	}
+});
+
+
 
 
 app.Views.GetTweets = Backbone.View.extend({
@@ -97,20 +109,32 @@ app.Views.Tweets = Backbone.View.extend({
 	getSelectedText: function(e){
 
 		var selectedText = document.getSelection();
-		$('div#popup').css({top: e.pageY, left: e.pageX}).empty().addClass('hidden');
+		selectedText = encodeURI(selectedText.toString().replace(' ','_'));
+		$('div#popup').css({top: e.pageY, left: e.pageX}).html('<div id="wiki"></div><div id="images"></div>').addClass('hidden');
 		if(selectedText!=''){
-			wiki_p = new app.Models.Wikipedia({data: {query:selectedText}});
+			var wiki_p = new app.Models.Wikipedia({data: {query:selectedText}});
 			wiki_p.fetch({
 				error: function(){
-
+					$('div#wiki').html('It looks like there was a problem getting results from wikipedia');
 				},
-				success: function(response,e){
+				success: function(response){
 					new app.Views.Wikipedia({
 						model: response
 					});
 				}
 
 			});
+
+		 var bings = new app.Collections.Images({data: {query: selectedText}});
+		 bings.fetch({
+		 	error: function(){
+		 		$('div#images').html('It looks like there was a problem getting image results');
+		 	},
+		 	success: function(response){
+		 		new app.Views.Images({collection:response});
+		 	}
+		 });
+
 		}
 		
 	}
@@ -118,14 +142,30 @@ app.Views.Tweets = Backbone.View.extend({
 });
 
 app.Views.Wikipedia = Backbone.View.extend({
-	el: 'div#popup',
+	el: 'div#wiki',
 	initialize: function(){
-		$(this.el).empty();
 		this.render();
-		console.log(this);
+
 	},
 	render: function(){
-		$(this.el).text(this.model.attributes.first_paragraph).removeClass('hidden');
+		if(this.model.attributes.first_paragraph.length<100){
+			this.model.attributes.first_paragraph = 'There is no single Wikipedia entry which best matches your selection.';
+		}
+		$(this.el).html('<span>'+this.model.attributes.first_paragraph+'</span> <a href="'+this.model.attributes.url+'" target="new">See more on Wikipedia</a>');
+		$('div#popup').removeClass('hidden');
 	}
 });
+
+app.Views.Images = Backbone.View.extend({
+	el: 'div#images',
+	initialize: function(){
+		console.log(this);
+		this.collection.each(this.add);
+	},
+	add: function(img){
+		console.log(img.attributes);
+		$('div#images').append('<img src="'+img.attributes.img+'"/>');
+	}
+});
+
 

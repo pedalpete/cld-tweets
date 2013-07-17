@@ -36,18 +36,49 @@ app.get('/tweets/:username', function(req,res){
 });
 
 app.get('/wikipedia/:query', function(req,res){
-
-	ext_request('http://en.wikipedia.org/wiki/'+req.params.query, function(err,resp,body){
+	var url = 'http://en.wikipedia.org/wiki/'+req.params.query;
+	ext_request(url, function(err,resp,body){
 		 res.type('json');
 		if(err){
 			return res.jsonp({error: "dang! There was a probem getting the wikipedia page. Is it possible wikipedia doesn't know what "+req.params.query+" is?"});
 		} else {
 			$=cheerio.load(body);
 			var first_p = $('p').slice(0).eq(0).text();
-			return res.jsonp({first_paragraph: first_p});
+			return res.jsonp({first_paragraph: first_p,url: url});
 		}
 	});
 	
+});
+
+app.get('/bing-images/:query', function(req,res){
+
+	ext_request('http://www.bing.com/images/search?q='+req.params.query, function(err,resp,body){
+		res.type('json');
+		if(err){
+			return res.jsonp({error:"hhhmmm something went wrong her, maybe no pictures"});
+		} else {
+			$=cheerio.load(body);
+			var images = [];
+			var index =0;
+			var last_image ='';
+			 $('img').each(function(index){
+	
+				 while(index<16){
+					var this_image = $(this).attr('src');
+			 		if(this_image.slice(0,4)=='http' && last_image!=this_image){
+			 			console.log(index);
+			 			images.push({img: this_image});
+			 			last_image = this_image;
+			 		}
+			 		index++;
+			 	}
+			 	return;
+			 });
+
+			console.log(images);
+			return res.jsonp(images)
+		}
+	});
 });
 app.listen(process.env.PORT || 4730);
 
