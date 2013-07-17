@@ -42,6 +42,7 @@ app.Helpers = {
 
 			if(response.error!=undefined){
 				$('div#errors').text(response.error);
+				$('div#tweets').empty();
 					} else {
 				new app.Views.Tweets({collection:tweets});
 				}
